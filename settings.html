@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Настройки Генерации</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #1c1c1e);
+            --text-color: var(--tg-theme-text-color, #ffffff);
+            --hint-color: var(--tg-theme-hint-color, #999999);
+            --button-color: var(--tg-theme-button-color, #2481cc);
+            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #2c2c2e);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            user-select: none;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            background-color: var(--secondary-bg);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: var(--hint-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        /* Grid for Aspect Ratio */
+        .ratio-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .ratio-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ratio-item.selected {
+            border-color: var(--button-color);
+            background-color: rgba(36, 129, 204, 0.1);
+        }
+
+        .ratio-box {
+            border: 2px solid var(--text-color);
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .ratio-16-9 { width: 32px; height: 18px; }
+        .ratio-9-16 { width: 18px; height: 32px; }
+        .ratio-1-1 { width: 24px; height: 24px; }
+
+        .ratio-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Toggles and Selects */
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+        }
+
+        .form-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Slider */
+        input[type=range] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        /* Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--button-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="section">
+        <div class="section-title">Формат видео</div>
+        <div class="ratio-grid">
+            <div class="ratio-item" onclick="selectRatio('landscape')" id="ratio-landscape">
+                <div class="ratio-box ratio-16-9"></div>
+                <span class="ratio-label">16:9</span>
+            </div>
+            <div class="ratio-item" onclick="selectRatio('portrait')" id="ratio-portrait">
+                <div class="ratio-box ratio-9-16"></div>
+                <span class="ratio-label">9:16</span>
+            </div>
+            <div class="ratio-item" onclick="selectRatio('square')" id="ratio-square">
+                <div class="ratio-box ratio-1-1"></div>
+                <span class="ratio-label">1:1</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Параметры</div>
+        
+        <div class="form-row">
+            <span>💎 Высокое качество (1080p)</span>
+            <label class="switch">
+                <input type="checkbox" id="quality-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="form-row">
+            <span>⏱ Длительность</span>
+            <select id="duration-select" style="background: transparent; color: var(--button-color); border: none; font-size: 16px; font-weight: bold;">
+                <option value="5">5 сек</option>
+                <option value="10" selected>10 сек</option>
+                <option value="15">15 сек</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Дополнительно</div>
+        <div class="form-row">
+            <span>🧹 Удалить водяной знак</span>
+            <label class="switch">
+                <input type="checkbox" id="watermark-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // State
+        let state = {
+            orientation: 'landscape',
+            quality: '720p',
+            duration: 10,
+            remove_watermark: false
+        };
+
+        // Initialize
+        function init() {
+            // Try to parse init data (not implemented fully for this demo, but logic is here)
+            // const urlParams = new URLSearchParams(window.location.search);
+            // if(urlParams.get('orientation')) state.orientation = urlParams.get('orientation');
+
+            updateUI();
+            
+            // Show Main Button
+            tg.MainButton.text = "СОХРАНИТЬ НАСТРОЙКИ";
+            tg.MainButton.show();
+            
+            tg.MainButton.onClick(function(){
+                // Gather data
+                state.quality = document.getElementById('quality-toggle').checked ? '1080p' : '720p';
+                state.remove_watermark = document.getElementById('watermark-toggle').checked;
+                state.duration = parseInt(document.getElementById('duration-select').value);
+                
+                // Send to bot
+                tg.sendData(JSON.stringify(state));
+            });
+        }
+
+        function selectRatio(ratio) {
+            state.orientation = ratio;
+            
+            document.querySelectorAll('.ratio-item').forEach(el => el.classList.remove('selected'));
+            document.getElementById('ratio-' + ratio).classList.add('selected');
+            
+            Haptics();
+        }
+
+        function updateUI() {
+            selectRatio(state.orientation);
+            // Set other inputs if needed based on initial state
+        }
+
+        function Haptics() {
+            if(tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
